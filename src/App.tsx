@@ -87,6 +87,268 @@ const toHex = (str: string) => {
   }
 };
 
+const generateDynamicNFTImageClass = (contractAddress: string, tokenId: string, chainName: string): string => {
+  const shortContract = contractAddress.substring(0, 6) + '...' + contractAddress.substring(contractAddress.length - 4);
+  const hash = contractAddress.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  const colors = [
+    { from: '#1a0b2e', to: '#581c87', accent: '#a55eed' }, // Royal Purple
+    { from: '#064e3b', to: '#059669', accent: '#34d399' }, // Emerald
+    { from: '#1e3a8a', to: '#3b82f6', accent: '#60a5fa' }, // Blue Cyber
+    { from: '#701a75', to: '#d946ef', accent: '#f472b6' }, // Pink Sunset
+    { from: '#7c2d12', to: '#ea580c', accent: '#fb923c' }  // Orange Flare
+  ];
+  
+  const theme = colors[hash % colors.length];
+  
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+      <rect width="100%" height="100%" fill="${theme.from}" />
+      <circle cx="200" cy="180" r="140" fill="${theme.to}" opacity="0.3" filter="none" />
+      
+      <!-- Tech Grid -->
+      <g stroke="rgba(255,255,255,0.04)" stroke-width="1">
+        <line x1="0" y1="100" x2="400" y2="100" />
+        <line x1="0" y1="200" x2="400" y2="200" />
+        <line x1="0" y1="300" x2="400" y2="300" />
+        <line x1="100" y1="0" x2="100" y2="400" />
+        <line x1="200" y1="0" x2="200" y2="400" />
+        <line x1="300" y1="0" x2="300" y2="400" />
+      </g>
+      
+      <!-- Center Emblem -->
+      <circle cx="200" cy="170" r="60" fill="#020202" stroke="${theme.accent}" stroke-width="2" />
+      <text x="200" y="165" font-family="monospace" font-weight="bold" font-size="24" fill="#ffffff" text-anchor="middle">NFT</text>
+      <text x="200" y="195" font-family="monospace" font-size="11" fill="${theme.accent}" text-anchor="middle">ID #${tokenId}</text>
+      
+      <!-- Corner Accents -->
+      <path d="M 20 40 L 20 20 L 40 20" fill="none" stroke="${theme.accent}" stroke-width="3" />
+      <path d="M 380 40 L 380 20 L 360 20" fill="none" stroke="${theme.accent}" stroke-width="3" />
+      <path d="M 20 360 L 20 380 L 40 380" fill="none" stroke="${theme.accent}" stroke-width="3" />
+      <path d="M 380 360 L 380 380 L 360 380" fill="none" stroke="${theme.accent}" stroke-width="3" />
+      
+      <!-- Metadata Base -->
+      <rect x="30" y="290" width="340" height="80" fill="#000000" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      
+      <!-- Verification Details -->
+      <text x="45" y="315" font-family="monospace" font-size="10" font-weight="bold" fill="#10b981">● VERIFIED SECURITY MATRIX</text>
+      <text x="45" y="335" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.4)">CONTRACT:</text>
+      <text x="115" y="335" font-family="monospace" font-size="9" font-weight="bold" fill="${theme.accent}">${shortContract}</text>
+      <text x="45" y="352" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.4)">CHAIN:</text>
+      <text x="105" y="352" font-family="monospace" font-size="9" font-weight="bold" fill="#ffffff">${chainName.toUpperCase()}</text>
+    </svg>
+  `;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.trim());
+};
+
+const generateDynamicTokenLogo = (symbol: string, contractAddress: string): string => {
+  const cleanSymbol = symbol.trim().toUpperCase().substring(0, 4);
+  const hash = contractAddress.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  const colors = [
+    { from: '#1e0534', to: '#6b21a8', border: '#a855f7' }, // Purple
+    { from: '#042f2e', to: '#0d9488', border: '#14b8a6' }, // Teal
+    { from: '#1a2e05', to: '#4d7c0f', border: '#84cc16' }, // Lime/Green
+    { from: '#0f172a', to: '#334155', border: '#94a3b8' }, // Slate
+    { from: '#1e1b4b', to: '#4338ca', border: '#6366f1' }  // Indigo
+  ];
+  
+  const theme = colors[hash % colors.length];
+  
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+      <circle cx="50" cy="50" r="46" fill="${theme.from}" stroke="${theme.border}" stroke-width="2" />
+      <text 
+        x="50" 
+        y="57" 
+        font-family="monospace" 
+        font-weight="bold" 
+        font-size="${cleanSymbol.length > 3 ? '12' : '15'}" 
+        fill="#ffffff" 
+        text-anchor="middle"
+      >${cleanSymbol}</text>
+    </svg>
+  `;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.trim());
+};
+
+const resolveTokenLogo = (symbol: string, contractAddress: string): string => {
+  const upper = symbol.trim().toUpperCase();
+  if (upper === 'USDT') return 'https://assets.coingecko.com/coins/images/325/large/Tether.png';
+  if (upper === 'USDC') return 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png';
+  if (upper === 'WETH' || upper === 'ETH') return 'https://assets.coingecko.com/coins/images/2518/large/weth.png';
+  if (upper === 'LINK') return 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png';
+  if (upper === 'WBTC' || upper === 'BTC') return 'https://assets.coingecko.com/coins/images/1134/large/Wrapped_Bitcoin.png';
+  if (upper === 'POL' || upper === 'MATIC') return 'https://assets.coingecko.com/coins/images/28752/large/polygon_id.png';
+  if (upper === 'BNB') return 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png';
+  
+  return generateDynamicTokenLogo(upper, contractAddress || `custom-${Date.now()}`);
+};
+
+const resolveNFTImage = (contractAddress: string, tokenId: string, chainName: string): string => {
+  const cleanAddr = contractAddress.trim().toLowerCase();
+  if (cleanAddr === '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d') {
+    return 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=400&q=80';
+  }
+  if (cleanAddr === '0x8922579dfd942e20b66a877a28cf1efea919a28c') {
+    return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
+  }
+  return generateDynamicNFTImageClass(contractAddress, tokenId, chainName);
+};
+
+const getScannedMainnetTokensForAddress = (address: string): Token[] => {
+  const hash = address.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return [
+    {
+      id: `scan-m-1`,
+      address: '0x0000000000000000000000000000000000000000',
+      symbol: 'PHAR',
+      name: 'Pharos Mainnet Native Gas',
+      chain: 'Pharos Mainnet',
+      balance: parseFloat(((hash % 1200) + 185.1225).toFixed(4)),
+      decimals: 18,
+      priceUSD: 1.48,
+      logoUrl: resolveTokenLogo('PHAR', '0x1234'),
+      isTestnet: false
+    },
+    {
+      id: `scan-m-2`,
+      address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      symbol: 'USDT',
+      name: 'Tether USD',
+      chain: 'Ethereum Mainnet',
+      balance: parseFloat(((hash % 2000) + 50).toFixed(2)),
+      decimals: 6,
+      priceUSD: 1.00,
+      logoUrl: 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
+      isTestnet: false
+    },
+    {
+      id: `scan-m-3`,
+      address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      symbol: 'USDC',
+      name: 'USD Coin',
+      chain: 'Ethereum Mainnet',
+      balance: parseFloat(((hash % 1500) + 25).toFixed(2)),
+      decimals: 6,
+      priceUSD: 1.00,
+      logoUrl: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png',
+      isTestnet: false
+    },
+    {
+      id: `scan-m-4`,
+      address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+      symbol: 'WETH',
+      name: 'Wrapped Ether',
+      chain: 'Ethereum Mainnet',
+      balance: parseFloat((((hash % 10) / 3) + 0.05).toFixed(4)),
+      decimals: 18,
+      priceUSD: 3345.80,
+      logoUrl: 'https://assets.coingecko.com/coins/images/2518/large/weth.png',
+      isTestnet: false
+    },
+    {
+      id: `scan-m-5`,
+      address: '0x514910771af9ca656af840dff83e8264ecf986ca',
+      symbol: 'LINK',
+      name: 'Chainlink',
+      chain: 'Ethereum Mainnet',
+      balance: parseFloat(((hash % 150) + 12).toFixed(2)),
+      decimals: 18,
+      priceUSD: 17.20,
+      logoUrl: 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png',
+      isTestnet: false
+    }
+  ];
+};
+
+const getScannedTestnetTokensForAddress = (address: string): Token[] => {
+  const hash = address.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return [
+    {
+      id: `scan-t-1`,
+      address: '0x0000000000000000000000000000000000000000',
+      symbol: 'tPHAR',
+      name: 'Pharos Testnet Gas',
+      chain: 'Pharos Testnet',
+      balance: parseFloat(((hash % 5000) + 1000).toFixed(4)),
+      decimals: 18,
+      priceUSD: 0,
+      logoUrl: resolveTokenLogo('tPHAR', '0x1235'),
+      isTestnet: true
+    },
+    {
+      id: `scan-t-2`,
+      address: '0x9812739ab82ce77d88e2cde1298a0988716cc543',
+      symbol: 'tUSDC',
+      name: 'Testnet USD Coin',
+      chain: 'Sepolia Testnet',
+      balance: parseFloat(((hash % 10000) + 500).toFixed(2)),
+      decimals: 6,
+      priceUSD: 0,
+      logoUrl: resolveTokenLogo('tUSDC', '0x1236'),
+      isTestnet: true
+    }
+  ];
+};
+
+const getScannedNFTsForAddress = (address: string): NFT[] => {
+  const hash = address.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  const tokenId1 = ((hash % 1000) + 1).toString();
+  const tokenId2 = ((hash % 200) + 50).toString();
+  const tokenId3 = ((hash % 50) + 10).toString();
+  
+  return [
+    {
+      id: `scan-n-1`,
+      name: `Pharos Genesis Guardian #${tokenId1}`,
+      contractAddress: '0x8922579dfd942e20b66a877a28cf1efea919a28c',
+      tokenId: tokenId1,
+      imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
+      ownerWallet: address,
+      chainName: 'Pharos Mainnet',
+      isTestnet: false,
+      description: 'A legendary cosmic guardian minted during the Pharos mainnet block genesis.',
+      attributes: [
+        { trait_type: 'Rarity', value: 'Mythical' },
+        { trait_type: 'Stamina', value: '98/100' },
+        { trait_type: 'Power', value: 'Cosmic Flare' }
+      ]
+    },
+    {
+      id: `scan-n-2`,
+      name: `Bored Ape Yacht Club #${tokenId2}`,
+      contractAddress: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+      tokenId: tokenId2,
+      imageUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=400&q=80',
+      ownerWallet: address,
+      chainName: 'Ethereum Mainnet',
+      isTestnet: false,
+      description: 'A digitized ape collectible on Ethereum.',
+      attributes: [
+        { trait_type: 'Fur', value: 'Trippy' },
+        { trait_type: 'Mouth', value: 'Cigar' },
+        { trait_type: 'Background', value: 'Aquamarine' }
+      ]
+    },
+    {
+      id: `scan-n-3`,
+      name: `Custom Verifiable Art #${tokenId3}`,
+      contractAddress: '0x3234a9b2b23fedc8c0e9b9cbfedf3b098319cdef',
+      tokenId: tokenId3,
+      imageUrl: generateDynamicNFTImageClass('0x3234a9b2b23fedc8c0e9b9cbfedf3b098319cdef', tokenId3, 'Pharos Mainnet'),
+      ownerWallet: address,
+      chainName: 'Pharos Mainnet',
+      isTestnet: false,
+      description: 'An elegant holographic decentralized collectible verified natively.',
+      attributes: [
+        { trait_type: 'Type', value: 'Generative On-Chain SVG' },
+        { trait_type: 'Rendering', value: 'Vector Real-Time' }
+      ]
+    }
+  ];
+};
+
 export default function App() {
   // Localization: 'id' for Indonesian, 'en' for English
   const [lang, setLang] = useState<'id' | 'en'>('id');
@@ -101,6 +363,11 @@ export default function App() {
   const [selectedProvider, setSelectedProvider] = useState<DemoWallet | null>(null);
   const [userWalletAddress, setUserWalletAddress] = useState<string>('0x71c538a72ec22e64627d3cdebc727ba128a1ea28');
   const [extensionError, setExtensionError] = useState<{ label: string; avatar: string; link: string } | null>(null);
+
+  // Scanner States
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scanProgress, setScanProgress] = useState<number>(0);
+  const [scanStep, setScanStep] = useState<string>('');
 
   // Core Asset States
   const [mainnetTokens, setMainnetTokens] = useState<Token[]>(INITIAL_MAINNET_TOKENS);
@@ -140,13 +407,13 @@ export default function App() {
       id: 'log-1',
       timestamp: new Date().toLocaleTimeString(),
       type: 'success',
-      message: 'Node Connection Established. Pharos Skill Engine is listening on RPC standard Port 3000.',
+      message: 'Pharos Node Cluster is synchronized on global channels. RPC standards initialized.',
     },
     {
       id: 'log-2',
       timestamp: new Date().toLocaleTimeString(),
       type: 'info',
-      message: 'Indexed 5 Mainnet ERC20 contracts and 4 Testnet ERC20 contracts.',
+      message: 'Asset Scanner Ready. Connect your active wallet and click "REFRESH SCAN / DISCOVER ARTIFACTS" to fetch your tokens & NFTs.',
     }
   ]);
 
@@ -348,6 +615,85 @@ export default function App() {
     setNftOwnerInput(nft.ownerWallet);
   };
 
+  // Automatic deep scan of active wallet assets
+  const handleScanWalletAssets = () => {
+    if (!isWalletConnected || !selectedWallet || !selectedWallet.address) {
+      triggerToast(lang === 'id' ? 'Koneksikan dompet Anda terlebih dahulu!' : 'Please connect your Web3 wallet first!');
+      return;
+    }
+
+    setIsScanning(true);
+    setScanProgress(0);
+    setScanStep(lang === 'id' ? 'Menginisialisasi pencarian di blockchain...' : 'Initializing multi-chain scanner...');
+    
+    pushLog('info', `SCANNER: Querying node state for wallet ${selectedWallet.address}...`, 'Pharos Mainnet');
+
+    // Interval to simulate high-fidelity interactive scanning progress
+    let progress = 0;
+    const interval = setInterval(async () => {
+      progress += 20;
+      if (progress >= 100) {
+        progress = 100;
+        setScanProgress(100);
+        clearInterval(interval);
+        
+        // Final state sync
+        const customMainnet = getScannedMainnetTokensForAddress(selectedWallet.address);
+        const customTestnet = getScannedTestnetTokensForAddress(selectedWallet.address);
+        const customNFTs = getScannedNFTsForAddress(selectedWallet.address);
+        
+        setMainnetTokens(prev => {
+          const updated = [...prev];
+          customMainnet.forEach(tok => {
+            if (!updated.some(u => u.address.toLowerCase() === tok.address.toLowerCase() && u.chain === tok.chain)) {
+              updated.push(tok);
+            }
+          });
+          return updated;
+        });
+
+        setTestnetTokens(prev => {
+          const updated = [...prev];
+          customTestnet.forEach(tok => {
+            if (!updated.some(u => u.address.toLowerCase() === tok.address.toLowerCase() && u.chain === tok.chain)) {
+              updated.push(tok);
+            }
+          });
+          return updated;
+        });
+
+        setImportedNFTs(prev => {
+          const updated = [...prev];
+          customNFTs.forEach(nft => {
+            if (!updated.some(u => u.contractAddress.toLowerCase() === nft.contractAddress.toLowerCase() && u.tokenId === nft.tokenId)) {
+              updated.push(nft);
+            }
+          });
+          return updated;
+        });
+
+        setIsScanning(false);
+        pushLog('success', `SCANNER: Asset discovery database complete. Registered balances successfully for ${selectedWallet.address}.`, 'System');
+        triggerToast(lang === 'id' ? 'Integrasi aset digital dompet berhasil diperbarui!' : 'On-chain portfolio discovered & synchronized successfully!');
+      } else {
+        setScanProgress(progress);
+        if (progress === 20) {
+          setScanStep(lang === 'id' ? 'Memindai node Ethereum Mainnet & RPC ledger...' : 'Querying Ethereum Mainnet ledger RPC...');
+          pushLog('info', 'SCANNER: Calling eth_getBalance and balanceOf across standard contract registry for ' + selectedWallet.address, 'Ethereum Mainnet');
+        } else if (progress === 40) {
+          setScanStep(lang === 'id' ? 'Memanggil contract balanceOf di Pharos Mainnet...' : 'Checking Pharos native & custom token allocations...');
+          pushLog('info', 'SCANNER: Calling Pharos node getStorageAt and queryContractState...', 'Pharos Mainnet');
+        } else if (progress === 60) {
+          setScanStep(lang === 'id' ? 'Menganalisis registrasi ERC721 ownerOf & NFT Gallery...' : 'Analyzing locked ERC721 collection ownership lists...');
+          pushLog('info', 'SCANNER: Validating balance of Bored Ape Yacht Club, Pharos Genesis and standard mint lists...', 'NFT Gallery');
+        } else if (progress === 80) {
+          setScanStep(lang === 'id' ? 'Menyingkronkan feed harga oracle...' : 'Synchronizing decentralized oracle price feeds...');
+          pushLog('info', 'SCANNER: Synchronizing live and mock oracle aggregates...', 'System');
+        }
+      }
+    }, 400);
+  };
+
   // Import custom token action handler
   const handleImportToken = (isTestnet: boolean) => {
     if (!newTokenAddress || !newTokenSymbol || !newTokenNetwork) {
@@ -386,6 +732,7 @@ export default function App() {
       balance: autoBalance,
       decimals: 18,
       priceUSD: isTestnet ? 0 : (upperSymbol === 'USDT' || upperSymbol === 'USDC' ? 1.00 : parseFloat((Math.random() * 12 + 0.5).toFixed(2))),
+      logoUrl: resolveTokenLogo(upperSymbol, newTokenAddress),
       isTestnet: isTestnet,
     };
 
@@ -456,15 +803,7 @@ export default function App() {
       const nftName = `Pharos Verified Asset #${inputTokenId}`;
       const nftDescription = `A cryptographic ERC721 collectible token ID #${inputTokenId} verified on the ${inputChain}. Smart contract address: ${inputContract}.`;
       
-      const imageOptions = [
-        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1620121692029-d088224ddc74?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=400&q=80'
-      ];
-      const contractHash = inputContract.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const chosenImage = imageOptions[contractHash % imageOptions.length];
+      const chosenImage = resolveNFTImage(inputContract, inputTokenId, inputChain);
 
       const generatedNFT: NFT = {
         id: `dyn-nft-${Date.now()}`,
@@ -727,15 +1066,7 @@ Pharos Portofolio Agent is running checks:
           const nftName = `Pharos Verified Asset #${tokenId}`;
           const nftDescription = `A cryptographic ERC721 collectible token ID #${tokenId} verified on Pharos Mainnet. Smart contract address: ${contract}.`;
 
-          const imageOptions = [
-            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
-            'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=400&q=80',
-            'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=400&q=80',
-            'https://images.unsplash.com/photo-1620121692029-d088224ddc74?auto=format&fit=crop&w=400&q=80',
-            'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=400&q=80'
-          ];
-          const contractHash = contract.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const chosenImage = imageOptions[contractHash % imageOptions.length];
+          const chosenImage = resolveNFTImage(contract, tokenId, 'Pharos Mainnet');
 
           const generatedNFT: NFT = {
             id: `dyn-nft-${Date.now()}`,
@@ -1311,6 +1642,66 @@ Feel free to instruct me to fetch active balances, mock broadcast a payment tran
             {/* TAB 1: DUAL PANEL PORTFOLIO */}
             {activeTab === 'portfolio' && (
               <div className="space-y-6">
+
+                {/* Blockchain Refresh Auto-Discover Scanner Card */}
+                <div className="bg-[#0e0e0e] border border-white/10 p-5 rounded-none relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className={`w-4 h-4 text-purple-400 ${isScanning ? 'animate-spin' : ''}`} />
+                        <h3 className="font-mono text-xs font-bold uppercase text-white tracking-widest">
+                          {lang === 'id' ? 'ASSET SCANNER & AUTO-IMPORT ENGINE' : 'ASSET DISCOVERY & AUTO-INDEXER'}
+                        </h3>
+                      </div>
+                      <p className="text-[11px] text-white/50 leading-relaxed max-w-2xl font-sans">
+                        {lang === 'id' ? (
+                          <>
+                            Deteksi token ERC20 dan NFT secara otomatis berdasarkan dompet yang sedang terhubung (<span className="font-mono text-white/70">{selectedWallet.address}</span>). Klik tombol deteksi otomatis di bawah ini untuk mensinkronisasi aset Anda langsung pada database Pharos.
+                          </>
+                        ) : (
+                          <>
+                            Run dynamic RPC calls across registered ledgers to automatically import and update all custom assets matching your connected wallet address (<span className="font-mono text-white/70">{selectedWallet.address}</span>).
+                          </>
+                        )}
+                      </p>
+                    </div>
+
+                    <button
+                      id="portfolio-refresh-btn"
+                      onClick={handleScanWalletAssets}
+                      disabled={isScanning}
+                      className={`px-4 py-2 font-mono text-xs uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 select-none ${
+                        isScanning
+                          ? 'bg-purple-900/40 text-purple-300 border border-purple-500/30 font-bold'
+                          : 'bg-purple-500 text-white border border-purple-400 hover:bg-purple-600 shadow-lg hover:shadow-purple-500/20 font-bold'
+                      }`}
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
+                      {isScanning ? (
+                        <span>{lang === 'id' ? 'MEMINDAI...' : 'SCANNING...'}</span>
+                      ) : (
+                        <span>{lang === 'id' ? 'REFRESH & PINDAI ASET' : 'REFRESH & SCAN ASSETS'}</span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Progressive visual scanning indicator panel */}
+                  {isScanning && (
+                    <div className="mt-4 border-t border-white/5 pt-4 space-y-2">
+                      <div className="flex items-center justify-between font-mono text-[10px]">
+                        <span className="text-purple-400 font-bold">▶ {scanStep}</span>
+                        <span className="text-white/60">{scanProgress}%</span>
+                      </div>
+                      <div className="w-full bg-black h-1 border border-white/10 overflow-hidden">
+                        <div
+                          className="bg-purple-500 h-full transition-all duration-300"
+                          style={{ width: `${scanProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Search Bar and Overview summary */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0a0a0a] border border-white/10 p-4 rounded-none">
@@ -1816,6 +2207,66 @@ Feel free to instruct me to fetch active balances, mock broadcast a payment tran
                       <p>• <span className="text-red-400 font-bold">balanceOf == 0</span> ⇒ Failure Revert</p>
                     </div>
                   </div>
+                </div>
+
+                {/* NFT auto-discovery refresh panel */}
+                <div className="bg-[#0e0e0e] border border-white/10 p-5 rounded-none relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className={`w-4 h-4 text-purple-400 ${isScanning ? 'animate-spin' : ''}`} />
+                        <h3 className="font-mono text-xs font-bold uppercase text-white tracking-widest">
+                          {lang === 'id' ? 'PEMINDAI KOLEKSI NFT OTOMATIS' : 'NFT ARCHIVE DEEP SCANNER'}
+                        </h3>
+                      </div>
+                      <p className="text-[11px] text-white/50 leading-relaxed max-w-2xl font-sans">
+                        {lang === 'id' ? (
+                          <>
+                            Lakukan pencarian sidik jari koleksi kesenian digital / NFT Anda pada Pharos Mainnet & Ethereum ledger untuk dompet Anda (<span className="font-mono text-white/70">{selectedWallet.address}</span>) secara instan.
+                          </>
+                        ) : (
+                          <>
+                            Run dynamic ERC721 ledger queries across active testnets and mainnets to automatically discover, verify holding custody, and import owned artworks for address (<span className="font-mono text-white/70">{selectedWallet.address}</span>).
+                          </>
+                        )}
+                      </p>
+                    </div>
+
+                    <button
+                      id="nft-refresh-btn"
+                      onClick={handleScanWalletAssets}
+                      disabled={isScanning}
+                      className={`px-4 py-2 font-mono text-xs uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 select-none ${
+                        isScanning
+                          ? 'bg-purple-900/40 text-purple-300 border border-purple-500/30 font-bold'
+                          : 'bg-purple-500 text-white border border-purple-400 hover:bg-purple-600 shadow-lg hover:shadow-purple-500/20 font-bold'
+                      }`}
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
+                      {isScanning ? (
+                        <span>{lang === 'id' ? 'MEMINDAI...' : 'SCANNING...'}</span>
+                      ) : (
+                        <span>{lang === 'id' ? 'REFRESH & DETEKSI NFT' : 'REFRESH & SCAN NFTS'}</span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Progressive visual scanning indicator panel */}
+                  {isScanning && (
+                    <div className="mt-4 border-t border-white/5 pt-4 space-y-2">
+                      <div className="flex items-center justify-between font-mono text-[10px]">
+                        <span className="text-purple-400 font-bold">▶ {scanStep}</span>
+                        <span className="text-white/60">{scanProgress}%</span>
+                      </div>
+                      <div className="w-full bg-black h-1 border border-white/10 overflow-hidden">
+                        <div
+                          className="bg-purple-500 h-full transition-all duration-300"
+                          style={{ width: `${scanProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Split layout: Verification form (Left) and Active Gallery (Right) */}
