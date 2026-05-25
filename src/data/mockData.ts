@@ -29,26 +29,6 @@ export const DEMO_WALLETS: DemoWallet[] = [
     address: '',
     label: 'MetaMask',
     avatar: '🦊',
-  },
-  {
-    address: '',
-    label: 'Rabby Wallet',
-    avatar: '🐰',
-  },
-  {
-    address: '',
-    label: 'OKX Wallet',
-    avatar: '⬛',
-  },
-  {
-    address: '',
-    label: 'Phantom',
-    avatar: '👻',
-  },
-  {
-    address: '',
-    label: 'Trust Wallet',
-    avatar: '🛡️',
   }
 ];
 
