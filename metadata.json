@@ -1,0 +1,6 @@
+{
+  "name": "Pharos Skill & Portfolio Hub",
+  "description": "Multi-chain wallet portfolio summary with Mainnet & Testnet panels, token importing, and validated NFT import verification for the Pharos Agent Center Skill Builder campaign.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
