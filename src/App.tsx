@@ -540,43 +540,7 @@ export default function App() {
     }
 
     if (resolvedTxList.length === 0) {
-      const hashVal = address.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-      resolvedTxList = [
-        {
-          hash: `0x${hashVal.toString(16)}da72ec22e64627d3cdebc727ba128a1ea28dc3`,
-          blockNumber: '19842512',
-          timestamp: new Date(Date.now() - 3600000 * 2.5).toLocaleString(),
-          from: address,
-          to: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-          value: '0.0000',
-          gasUsed: '45321',
-          isError: false,
-          method: 'Approve'
-        },
-        {
-          hash: `0x${(hashVal + 1).toString(16)}ee64627d3cdebc727ba128a1ea28421b88df1`,
-          blockNumber: '19842491',
-          timestamp: new Date(Date.now() - 3600000 * 12).toLocaleString(),
-          from: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          to: address,
-          value: '1.2500',
-          gasUsed: '21000',
-          isError: false,
-          method: 'Transfer'
-        },
-        {
-          hash: `0x${(hashVal + 2).toString(16)}ba128a1ea28c02aaa39b223fe8d0a0e5c4fa99`,
-          blockNumber: '19841022',
-          timestamp: new Date(Date.now() - 3600000 * 48).toLocaleString(),
-          from: address,
-          to: '0x0000000000000000000000000000000000000000',
-          value: '0.0500',
-          gasUsed: '120532',
-          isError: false,
-          method: 'Stake'
-        }
-      ];
-      pushLog('info', `INDEXER: Generated dynamic transaction registry mapped key for ${address.substring(0,8)}.`);
+      pushLog('info', `INDEXER: No live transaction logs detected for address ${address.substring(0,8)}.`);
     }
 
     setTransactionHistory(resolvedTxList);
@@ -693,34 +657,7 @@ export default function App() {
         console.warn("Failed blockscout query fallback:", err);
       }
 
-      // If no other tokens found, add a couple of placeholder native tokens with calculated balance to make viewport look rich (graceful backup)
-      if (customTokens.length <= 1) {
-        const hash = address.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-        customTokens.push({
-          id: `backup-usdt`,
-          address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-          symbol: 'USDT',
-          name: 'Tether USD',
-          chain: activeNet.name,
-          balance: parseFloat(((hash % 1200) + 10.45).toFixed(2)),
-          decimals: 6,
-          priceUSD: 1.00,
-          logoUrl: 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
-          isTestnet: activeNet.isTestnet
-        });
-        customTokens.push({
-          id: `backup-usdc`,
-          address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          symbol: 'USDC',
-          name: 'USD Coin',
-          chain: activeNet.name,
-          balance: parseFloat(((hash % 850) + 5.12).toFixed(2)),
-          decimals: 6,
-          priceUSD: 1.00,
-          logoUrl: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png',
-          isTestnet: activeNet.isTestnet
-        });
-      }
+      // If no other tokens found, we do not add any placeholder/backup/demo tokens to ensure real-time wallet balance authenticity.
 
       if (activeNet.isTestnet) {
         setTestnetTokens(customTokens);
